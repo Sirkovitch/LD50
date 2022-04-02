@@ -7,9 +7,11 @@ public class pureeControler : MonoBehaviour
     private Rigidbody2D rB;
     private float maxVel = -20;
     private float lateralSpeed = 1;
+    private score score;
     void Start()
     {
         rB = this.GetComponent<Rigidbody2D>();
+        score = GameObject.Find("score").GetComponent<score>();
     }
 
     void FixedUpdate()
@@ -25,6 +27,23 @@ public class pureeControler : MonoBehaviour
             float velocityX = Mathf.Lerp(rB.velocity.x, 0, 0.05f);
             rB.velocity = new Vector2(velocityX, Mathf.Max(rB.velocity.y, maxVel));
 
+        }
+
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Bounce")
+        {
+            score.onHitBounce();
+        }
+        if (collision.gameObject.tag == "Bird")
+        {
+            score.onHitBird();
+        }
+        if (collision.gameObject.tag == "Wall")
+        {
+            score.onHitWall();
         }
 
     }

@@ -52,9 +52,10 @@ public class patrol : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        GameObject player = GameObject.Find("Player");
-        this.transform.parent = player.transform;
-        Destroy(this.GetComponent<Rigidbody2D>());
+        //GameObject player = GameObject.Find("Player");
+        //this.transform.parent = player.transform;
+        //Destroy(this.GetComponent<Rigidbody2D>());
+        this.GetComponent<Rigidbody2D>().gravityScale = 1;
         this.GetComponent<patrol>().enabled = false;
 
     }
