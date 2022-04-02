@@ -18,12 +18,12 @@ public class cameraController : MonoBehaviour
     {
         if (followX == true)
         {
-            this.transform.position = Vector3.Lerp(this.transform.position, new Vector3(puree.transform.position.x, puree.transform.position.y+4, 15), 0.02f);
+            this.transform.position = Vector3.Lerp(this.transform.position, new Vector3(puree.transform.position.x, puree.transform.position.y+1, 20), 0.02f);
 
         }
         else
         {
-            this.transform.position = Vector3.Lerp(this.transform.position, new Vector3(0, puree.transform.position.y+4, 15), 0.2f);
+            this.transform.position = Vector3.Lerp(this.transform.position, new Vector3(0, puree.transform.position.y+1, 20), 0.2f);
 
         }
     }

@@ -5,7 +5,7 @@ using UnityEngine;
 public class pureeControler : MonoBehaviour
 {
     private Rigidbody2D rB;
-    private float maxVel = -10;
+    private float maxVel = -20;
     private float lateralSpeed = 1;
     void Start()
     {
@@ -16,14 +16,14 @@ public class pureeControler : MonoBehaviour
     {
         if (Input.GetAxis("Horizontal") != 0)
         {
-            rB.AddForce(new Vector3(-lateralSpeed * Input.GetAxis("Horizontal") * Mathf.Clamp(Mathf.Abs(rB.velocity.y)*10,0,1), 0, 0), ForceMode2D.Impulse);
+            rB.AddForce(new Vector3(-lateralSpeed * Input.GetAxis("Horizontal") * Mathf.Clamp(Mathf.Abs(rB.velocity.y)*2,0,1), 0, 0), ForceMode2D.Impulse);
             rB.velocity = new Vector2(rB.velocity.x, Mathf.Max(rB.velocity.y, maxVel));
 
         }
         else
         {
             float velocityX = Mathf.Lerp(rB.velocity.x, 0, 0.05f);
-            //rB.velocity = new Vector2(velocityX, Mathf.Max(rB.velocity.y, maxVel));
+            rB.velocity = new Vector2(velocityX, Mathf.Max(rB.velocity.y, maxVel));
 
         }
 
