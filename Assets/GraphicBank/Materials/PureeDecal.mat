@@ -29,7 +29,7 @@ Material:
     - _FracUVEnable: 0
     - _MulAlphaToRGB: 0
     - _ProjectionAngleDiscardEnable: 1
-    - _ProjectionAngleDiscardThreshold: 0.2
+    - _ProjectionAngleDiscardThreshold: -1
     - _SrcBlend: 5
     - _StencilComp: 0
     - _StencilRef: 0
@@ -38,5 +38,5 @@ Material:
     - _ZTest: 0
     m_Colors:
     - _AlphaRemap: {r: 1, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 0.3529412, b: 0, a: 0}
+    - _Color: {r: 1, g: 0.3529412, b: 0, a: 1}
   m_BuildTextureStacks: []

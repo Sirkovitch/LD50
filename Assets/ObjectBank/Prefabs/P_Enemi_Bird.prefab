@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 4042377636872150418}
   - component: {fileID: 1237800819413593303}
   - component: {fileID: 2675809619365323363}
-  - component: {fileID: 7354851066274426077}
-  - component: {fileID: 6353317219310607873}
+  - component: {fileID: 544561171904024863}
+  - component: {fileID: 3614122764773382516}
   m_Layer: 0
   m_Name: P_Enemi_Bird
   m_TagString: Bird
@@ -101,43 +101,36 @@ MonoBehaviour:
   speed: 5
   patrolWidth: 20
   randomSpeed: 0
---- !u!70 &7354851066274426077
-CapsuleCollider2D:
+--- !u!136 &544561171904024863
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 117682827352266936}
-  m_Enabled: 1
-  m_Density: 1
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 1, y: 2}
-  m_Direction: 0
---- !u!50 &6353317219310607873
-Rigidbody2D:
-  serializedVersion: 4
+  m_Enabled: 1
+  m_Radius: 0.49999997
+  m_Height: 1.9999999
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!54 &3614122764773382516
+Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 117682827352266936}
-  m_BodyType: 0
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
+  serializedVersion: 2
   m_Mass: 1
-  m_LinearDrag: 0
+  m_Drag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 0
-  m_Material: {fileID: 0}
+  m_UseGravity: 0
+  m_IsKinematic: 0
   m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
   m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &6008446695274874901
 GameObject:
   m_ObjectHideFlags: 0

@@ -97,6 +97,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pureeDecal: {fileID: 3284827022317899100, guid: 68b40898b98882543aecbf7b57e5a581, type: 3}
+  feather: {fileID: 2459152572840722265, guid: beb66f5469a22e14d99950c131982c3a, type: 3}
 --- !u!65 &8295657803576883876
 BoxCollider:
   m_ObjectHideFlags: 0
