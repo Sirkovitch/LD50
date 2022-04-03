@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2739670424851700424}
   - component: {fileID: 2300194219766727015}
   - component: {fileID: 1049597048160828888}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: P_Bounce_Paravent
   m_TagString: Bounce
   m_Icon: {fileID: 0}
