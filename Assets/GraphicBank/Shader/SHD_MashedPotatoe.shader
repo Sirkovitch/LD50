@@ -4,14 +4,17 @@ Shader "SHD_MashedPotatoe"
 {
 	Properties
 	{
-		[HideInInspector] _AlphaCutoff("Alpha Cutoff ", Range(0, 1)) = 0.5
 		[HideInInspector] _EmissionColor("Emission Color", Color) = (1,1,1,1)
+		[HideInInspector] _AlphaCutoff("Alpha Cutoff ", Range(0, 1)) = 0.5
 		[ASEBegin]_NormalMap("Normal Map", 2D) = "white" {}
 		_Tilling("Tilling", Float) = 1
 		_NormalMapMask("Normal Map Mask", 2D) = "white" {}
+		_NormalMapMask1("Normal Map Mask", 2D) = "white" {}
 		_TillingMask("Tilling Mask", Float) = 1
 		_MaskPower("Mask Power", Float) = 1
 		_Float0("Float 0", Float) = 0
+		_TillingVertexoffset("Tilling Vertex offset", Float) = 1
+		_Vertexoffset("Vertex offset", Float) = 0
 		_VelocityPanner("Velocity Panner", Vector) = (1,0,0,0)
 		_Rotatetexture("Rotate texture", Float) = 0
 		_Metallic("Metallic", Float) = 0
@@ -249,6 +252,8 @@ Shader "SHD_MashedPotatoe"
 			float4 _ColorB;
 			float2 _VelocityPanner;
 			float _Rotatetexture;
+			float _TillingVertexoffset;
+			float _Vertexoffset;
 			float _Tilling;
 			float _TillingMask;
 			float _MaskPower;
@@ -275,6 +280,7 @@ Shader "SHD_MashedPotatoe"
 				float _TessMaxDisp;
 			#endif
 			CBUFFER_END
+			sampler2D _NormalMapMask1;
 			sampler2D _NormalMap;
 			sampler2D _NormalMapMask;
 
@@ -287,6 +293,13 @@ Shader "SHD_MashedPotatoe"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				float2 temp_output_61_0 = ( _VelocityPanner * float2( 0.5,0.5 ) );
+				float2 texCoord37 = v.texcoord.xy * float2( 1,1 ) + float2( 0,0 );
+				float cos44 = cos( radians( _Rotatetexture ) );
+				float sin44 = sin( radians( _Rotatetexture ) );
+				float2 rotator44 = mul( texCoord37 - float2( 0,0 ) , float2x2( cos44 , -sin44 , sin44 , cos44 )) + float2( 0,0 );
+				float2 panner67 = ( _TimeParameters.x * temp_output_61_0 + ( rotator44 * _TillingVertexoffset ));
+				
 				o.ase_texcoord7.xy = v.texcoord.xy;
 				
 				//setting value to unused interpolator channels and avoid initialization warnings
@@ -296,7 +309,7 @@ Shader "SHD_MashedPotatoe"
 				#else
 					float3 defaultVertexValue = float3(0, 0, 0);
 				#endif
-				float3 vertexValue = defaultVertexValue;
+				float3 vertexValue = ( tex2Dlod( _NormalMapMask1, float4( panner67, 0, 0.0) ) * _Vertexoffset ).rgb;
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					v.vertex.xyz = vertexValue;
 				#else
@@ -483,7 +496,8 @@ Shader "SHD_MashedPotatoe"
 				float sin44 = sin( radians( _Rotatetexture ) );
 				float2 rotator44 = mul( texCoord37 - float2( 0,0 ) , float2x2( cos44 , -sin44 , sin44 , cos44 )) + float2( 0,0 );
 				float2 panner10 = ( _TimeParameters.x * _VelocityPanner + ( rotator44 * _Tilling ));
-				float2 panner52 = ( _TimeParameters.x * ( _VelocityPanner * float2( 0.5,0.5 ) ) + ( rotator44 * _TillingMask ));
+				float2 temp_output_61_0 = ( _VelocityPanner * float2( 0.5,0.5 ) );
+				float2 panner52 = ( _TimeParameters.x * temp_output_61_0 + ( rotator44 * _TillingMask ));
 				float4 lerpResult47 = lerp( float4( 0.5019608,0.5019608,1,0 ) , tex2D( _NormalMap, panner10 ) , saturate( pow( ( tex2D( _NormalMapMask, panner52 ).r * _MaskPower ) , _Float0 ) ));
 				
 				float3 Albedo = lerpResult39.rgb;
@@ -688,7 +702,7 @@ Shader "SHD_MashedPotatoe"
 			{
 				float4 vertex : POSITION;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -711,6 +725,8 @@ Shader "SHD_MashedPotatoe"
 			float4 _ColorB;
 			float2 _VelocityPanner;
 			float _Rotatetexture;
+			float _TillingVertexoffset;
+			float _Vertexoffset;
 			float _Tilling;
 			float _TillingMask;
 			float _MaskPower;
@@ -737,7 +753,8 @@ Shader "SHD_MashedPotatoe"
 				float _TessMaxDisp;
 			#endif
 			CBUFFER_END
-			
+			sampler2D _NormalMapMask1;
+
 
 			
 			float3 _LightDirection;
@@ -751,13 +768,19 @@ Shader "SHD_MashedPotatoe"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO( o );
 
+				float2 temp_output_61_0 = ( _VelocityPanner * float2( 0.5,0.5 ) );
+				float2 texCoord37 = v.ase_texcoord.xy * float2( 1,1 ) + float2( 0,0 );
+				float cos44 = cos( radians( _Rotatetexture ) );
+				float sin44 = sin( radians( _Rotatetexture ) );
+				float2 rotator44 = mul( texCoord37 - float2( 0,0 ) , float2x2( cos44 , -sin44 , sin44 , cos44 )) + float2( 0,0 );
+				float2 panner67 = ( _TimeParameters.x * temp_output_61_0 + ( rotator44 * _TillingVertexoffset ));
 				
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
 				#else
 					float3 defaultVertexValue = float3(0, 0, 0);
 				#endif
-				float3 vertexValue = defaultVertexValue;
+				float3 vertexValue = ( tex2Dlod( _NormalMapMask1, float4( panner67, 0, 0.0) ) * _Vertexoffset ).rgb;
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					v.vertex.xyz = vertexValue;
 				#else
@@ -808,7 +831,8 @@ Shader "SHD_MashedPotatoe"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -825,7 +849,7 @@ Shader "SHD_MashedPotatoe"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.vertex;
 				o.ase_normal = v.ase_normal;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -864,7 +888,7 @@ Shader "SHD_MashedPotatoe"
 				VertexInput o = (VertexInput) 0;
 				o.vertex = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.ase_normal = patch[0].ase_normal * bary.x + patch[1].ase_normal * bary.y + patch[2].ase_normal * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -976,7 +1000,7 @@ Shader "SHD_MashedPotatoe"
 			{
 				float4 vertex : POSITION;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -999,6 +1023,8 @@ Shader "SHD_MashedPotatoe"
 			float4 _ColorB;
 			float2 _VelocityPanner;
 			float _Rotatetexture;
+			float _TillingVertexoffset;
+			float _Vertexoffset;
 			float _Tilling;
 			float _TillingMask;
 			float _MaskPower;
@@ -1025,7 +1051,8 @@ Shader "SHD_MashedPotatoe"
 				float _TessMaxDisp;
 			#endif
 			CBUFFER_END
-			
+			sampler2D _NormalMapMask1;
+
 
 			
 			VertexOutput VertexFunction( VertexInput v  )
@@ -1035,13 +1062,19 @@ Shader "SHD_MashedPotatoe"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				float2 temp_output_61_0 = ( _VelocityPanner * float2( 0.5,0.5 ) );
+				float2 texCoord37 = v.ase_texcoord.xy * float2( 1,1 ) + float2( 0,0 );
+				float cos44 = cos( radians( _Rotatetexture ) );
+				float sin44 = sin( radians( _Rotatetexture ) );
+				float2 rotator44 = mul( texCoord37 - float2( 0,0 ) , float2x2( cos44 , -sin44 , sin44 , cos44 )) + float2( 0,0 );
+				float2 panner67 = ( _TimeParameters.x * temp_output_61_0 + ( rotator44 * _TillingVertexoffset ));
 				
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
 				#else
 					float3 defaultVertexValue = float3(0, 0, 0);
 				#endif
-				float3 vertexValue = defaultVertexValue;
+				float3 vertexValue = ( tex2Dlod( _NormalMapMask1, float4( panner67, 0, 0.0) ) * _Vertexoffset ).rgb;
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					v.vertex.xyz = vertexValue;
 				#else
@@ -1071,7 +1104,8 @@ Shader "SHD_MashedPotatoe"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1088,7 +1122,7 @@ Shader "SHD_MashedPotatoe"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.vertex;
 				o.ase_normal = v.ase_normal;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -1127,7 +1161,7 @@ Shader "SHD_MashedPotatoe"
 				VertexInput o = (VertexInput) 0;
 				o.vertex = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.ase_normal = patch[0].ase_normal * bary.x + patch[1].ase_normal * bary.y + patch[2].ase_normal * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -1258,6 +1292,8 @@ Shader "SHD_MashedPotatoe"
 			float4 _ColorB;
 			float2 _VelocityPanner;
 			float _Rotatetexture;
+			float _TillingVertexoffset;
+			float _Vertexoffset;
 			float _Tilling;
 			float _TillingMask;
 			float _MaskPower;
@@ -1284,7 +1320,8 @@ Shader "SHD_MashedPotatoe"
 				float _TessMaxDisp;
 			#endif
 			CBUFFER_END
-			
+			sampler2D _NormalMapMask1;
+
 
 			
 			VertexOutput VertexFunction( VertexInput v  )
@@ -1294,6 +1331,13 @@ Shader "SHD_MashedPotatoe"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				float2 temp_output_61_0 = ( _VelocityPanner * float2( 0.5,0.5 ) );
+				float2 texCoord37 = v.ase_texcoord.xy * float2( 1,1 ) + float2( 0,0 );
+				float cos44 = cos( radians( _Rotatetexture ) );
+				float sin44 = sin( radians( _Rotatetexture ) );
+				float2 rotator44 = mul( texCoord37 - float2( 0,0 ) , float2x2( cos44 , -sin44 , sin44 , cos44 )) + float2( 0,0 );
+				float2 panner67 = ( _TimeParameters.x * temp_output_61_0 + ( rotator44 * _TillingVertexoffset ));
+				
 				o.ase_texcoord2.xy = v.ase_texcoord.xy;
 				
 				//setting value to unused interpolator channels and avoid initialization warnings
@@ -1304,7 +1348,7 @@ Shader "SHD_MashedPotatoe"
 				#else
 					float3 defaultVertexValue = float3(0, 0, 0);
 				#endif
-				float3 vertexValue = defaultVertexValue;
+				float3 vertexValue = ( tex2Dlod( _NormalMapMask1, float4( panner67, 0, 0.0) ) * _Vertexoffset ).rgb;
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					v.vertex.xyz = vertexValue;
 				#else
@@ -1520,6 +1564,8 @@ Shader "SHD_MashedPotatoe"
 			float4 _ColorB;
 			float2 _VelocityPanner;
 			float _Rotatetexture;
+			float _TillingVertexoffset;
+			float _Vertexoffset;
 			float _Tilling;
 			float _TillingMask;
 			float _MaskPower;
@@ -1546,7 +1592,8 @@ Shader "SHD_MashedPotatoe"
 				float _TessMaxDisp;
 			#endif
 			CBUFFER_END
-			
+			sampler2D _NormalMapMask1;
+
 
 			
 			VertexOutput VertexFunction( VertexInput v  )
@@ -1556,6 +1603,13 @@ Shader "SHD_MashedPotatoe"
 				UNITY_TRANSFER_INSTANCE_ID( v, o );
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO( o );
 
+				float2 temp_output_61_0 = ( _VelocityPanner * float2( 0.5,0.5 ) );
+				float2 texCoord37 = v.ase_texcoord.xy * float2( 1,1 ) + float2( 0,0 );
+				float cos44 = cos( radians( _Rotatetexture ) );
+				float sin44 = sin( radians( _Rotatetexture ) );
+				float2 rotator44 = mul( texCoord37 - float2( 0,0 ) , float2x2( cos44 , -sin44 , sin44 , cos44 )) + float2( 0,0 );
+				float2 panner67 = ( _TimeParameters.x * temp_output_61_0 + ( rotator44 * _TillingVertexoffset ));
+				
 				o.ase_texcoord2.xy = v.ase_texcoord.xy;
 				
 				//setting value to unused interpolator channels and avoid initialization warnings
@@ -1566,7 +1620,7 @@ Shader "SHD_MashedPotatoe"
 				#else
 					float3 defaultVertexValue = float3(0, 0, 0);
 				#endif
-				float3 vertexValue = defaultVertexValue;
+				float3 vertexValue = ( tex2Dlod( _NormalMapMask1, float4( panner67, 0, 0.0) ) * _Vertexoffset ).rgb;
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					v.vertex.xyz = vertexValue;
 				#else
@@ -1749,7 +1803,7 @@ Shader "SHD_MashedPotatoe"
 			{
 				float4 vertex : POSITION;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1773,6 +1827,8 @@ Shader "SHD_MashedPotatoe"
 			float4 _ColorB;
 			float2 _VelocityPanner;
 			float _Rotatetexture;
+			float _TillingVertexoffset;
+			float _Vertexoffset;
 			float _Tilling;
 			float _TillingMask;
 			float _MaskPower;
@@ -1799,7 +1855,8 @@ Shader "SHD_MashedPotatoe"
 				float _TessMaxDisp;
 			#endif
 			CBUFFER_END
-			
+			sampler2D _NormalMapMask1;
+
 
 			
 			VertexOutput VertexFunction( VertexInput v  )
@@ -1809,13 +1866,19 @@ Shader "SHD_MashedPotatoe"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				float2 temp_output_61_0 = ( _VelocityPanner * float2( 0.5,0.5 ) );
+				float2 texCoord37 = v.ase_texcoord.xy * float2( 1,1 ) + float2( 0,0 );
+				float cos44 = cos( radians( _Rotatetexture ) );
+				float sin44 = sin( radians( _Rotatetexture ) );
+				float2 rotator44 = mul( texCoord37 - float2( 0,0 ) , float2x2( cos44 , -sin44 , sin44 , cos44 )) + float2( 0,0 );
+				float2 panner67 = ( _TimeParameters.x * temp_output_61_0 + ( rotator44 * _TillingVertexoffset ));
 				
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					float3 defaultVertexValue = v.vertex.xyz;
 				#else
 					float3 defaultVertexValue = float3(0, 0, 0);
 				#endif
-				float3 vertexValue = defaultVertexValue;
+				float3 vertexValue = ( tex2Dlod( _NormalMapMask1, float4( panner67, 0, 0.0) ) * _Vertexoffset ).rgb;
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					v.vertex.xyz = vertexValue;
 				#else
@@ -1848,7 +1911,8 @@ Shader "SHD_MashedPotatoe"
 			{
 				float4 vertex : INTERNALTESSPOS;
 				float3 ase_normal : NORMAL;
-				
+				float4 ase_texcoord : TEXCOORD0;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
@@ -1865,7 +1929,7 @@ Shader "SHD_MashedPotatoe"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				o.vertex = v.vertex;
 				o.ase_normal = v.ase_normal;
-				
+				o.ase_texcoord = v.ase_texcoord;
 				return o;
 			}
 
@@ -1904,7 +1968,7 @@ Shader "SHD_MashedPotatoe"
 				VertexInput o = (VertexInput) 0;
 				o.vertex = patch[0].vertex * bary.x + patch[1].vertex * bary.y + patch[2].vertex * bary.z;
 				o.ase_normal = patch[0].ase_normal * bary.x + patch[1].ase_normal * bary.y + patch[2].ase_normal * bary.z;
-				
+				o.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
 				#if defined(ASE_PHONG_TESSELLATION)
 				float3 pp[3];
 				for (int i = 0; i < 3; ++i)
@@ -2066,6 +2130,8 @@ Shader "SHD_MashedPotatoe"
 			float4 _ColorB;
 			float2 _VelocityPanner;
 			float _Rotatetexture;
+			float _TillingVertexoffset;
+			float _Vertexoffset;
 			float _Tilling;
 			float _TillingMask;
 			float _MaskPower;
@@ -2092,6 +2158,7 @@ Shader "SHD_MashedPotatoe"
 				float _TessMaxDisp;
 			#endif
 			CBUFFER_END
+			sampler2D _NormalMapMask1;
 			sampler2D _NormalMap;
 			sampler2D _NormalMapMask;
 
@@ -2104,6 +2171,13 @@ Shader "SHD_MashedPotatoe"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+				float2 temp_output_61_0 = ( _VelocityPanner * float2( 0.5,0.5 ) );
+				float2 texCoord37 = v.texcoord.xy * float2( 1,1 ) + float2( 0,0 );
+				float cos44 = cos( radians( _Rotatetexture ) );
+				float sin44 = sin( radians( _Rotatetexture ) );
+				float2 rotator44 = mul( texCoord37 - float2( 0,0 ) , float2x2( cos44 , -sin44 , sin44 , cos44 )) + float2( 0,0 );
+				float2 panner67 = ( _TimeParameters.x * temp_output_61_0 + ( rotator44 * _TillingVertexoffset ));
+				
 				o.ase_texcoord7.xy = v.texcoord.xy;
 				
 				//setting value to unused interpolator channels and avoid initialization warnings
@@ -2113,7 +2187,7 @@ Shader "SHD_MashedPotatoe"
 				#else
 					float3 defaultVertexValue = float3(0, 0, 0);
 				#endif
-				float3 vertexValue = defaultVertexValue;
+				float3 vertexValue = ( tex2Dlod( _NormalMapMask1, float4( panner67, 0, 0.0) ) * _Vertexoffset ).rgb;
 				#ifdef ASE_ABSOLUTE_VERTEX_POS
 					v.vertex.xyz = vertexValue;
 				#else
@@ -2299,7 +2373,8 @@ Shader "SHD_MashedPotatoe"
 				float sin44 = sin( radians( _Rotatetexture ) );
 				float2 rotator44 = mul( texCoord37 - float2( 0,0 ) , float2x2( cos44 , -sin44 , sin44 , cos44 )) + float2( 0,0 );
 				float2 panner10 = ( _TimeParameters.x * _VelocityPanner + ( rotator44 * _Tilling ));
-				float2 panner52 = ( _TimeParameters.x * ( _VelocityPanner * float2( 0.5,0.5 ) ) + ( rotator44 * _TillingMask ));
+				float2 temp_output_61_0 = ( _VelocityPanner * float2( 0.5,0.5 ) );
+				float2 panner52 = ( _TimeParameters.x * temp_output_61_0 + ( rotator44 * _TillingMask ));
 				float4 lerpResult47 = lerp( float4( 0.5019608,0.5019608,1,0 ) , tex2D( _NormalMap, panner10 ) , saturate( pow( ( tex2D( _NormalMapMask, panner52 ).r * _MaskPower ) , _Float0 ) ));
 				
 				float3 Albedo = lerpResult39.rgb;
@@ -2464,70 +2539,85 @@ Shader "SHD_MashedPotatoe"
 }
 /*ASEBEGIN
 Version=18935
-0;494.2857;1637.857;659.2857;3239.409;762.8282;3.178409;True;True
-Node;AmplifyShaderEditor.RangedFloatNode;22;-1946.862,-216.2505;Inherit;False;Property;_Rotatetexture;Rotate texture;7;0;Create;True;0;0;0;False;0;False;0;0;0;0;0;1;FLOAT;0
+0;614.8572;1637.857;538.1429;2700.467;179.0827;2.33111;True;True
+Node;AmplifyShaderEditor.RangedFloatNode;22;-1946.862,-216.2505;Inherit;False;Property;_Rotatetexture;Rotate texture;10;0;Create;True;0;0;0;False;0;False;0;0;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.TextureCoordinatesNode;37;-1907.004,-386.24;Inherit;False;0;-1;2;3;2;SAMPLER2D;;False;0;FLOAT2;1,1;False;1;FLOAT2;0,0;False;5;FLOAT2;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.RadiansOpNode;46;-1771.482,-212.5623;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0
-Node;AmplifyShaderEditor.Vector2Node;12;-1469.603,56.74538;Inherit;False;Property;_VelocityPanner;Velocity Panner;6;0;Create;True;0;0;0;False;0;False;1,0;1,0;0;3;FLOAT2;0;FLOAT;1;FLOAT;2
+Node;AmplifyShaderEditor.Vector2Node;12;-1469.603,56.74538;Inherit;False;Property;_VelocityPanner;Velocity Panner;9;0;Create;True;0;0;0;False;0;False;1,0;1,0;0;3;FLOAT2;0;FLOAT;1;FLOAT;2
 Node;AmplifyShaderEditor.RotatorNode;44;-1621.871,-299.9588;Inherit;False;3;0;FLOAT2;0,0;False;1;FLOAT2;0,0;False;2;FLOAT;100;False;1;FLOAT2;0
-Node;AmplifyShaderEditor.RangedFloatNode;54;-1434.766,267.4117;Inherit;False;Property;_TillingMask;Tilling Mask;3;0;Create;True;0;0;0;False;0;False;1;1;0;0;0;1;FLOAT;0
-Node;AmplifyShaderEditor.SimpleMultiplyOpNode;53;-1270.966,251.8115;Inherit;False;2;2;0;FLOAT2;0,0;False;1;FLOAT;0;False;1;FLOAT2;0
+Node;AmplifyShaderEditor.RangedFloatNode;54;-1434.766,267.4117;Inherit;False;Property;_TillingMask;Tilling Mask;4;0;Create;True;0;0;0;False;0;False;1;1;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleTimeNode;18;-1222.307,174.9383;Inherit;False;1;0;FLOAT;1;False;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;61;-1261.475,348.4423;Inherit;False;2;2;0;FLOAT2;0,0;False;1;FLOAT2;0.5,0.5;False;1;FLOAT2;0
+Node;AmplifyShaderEditor.SimpleMultiplyOpNode;53;-1270.966,251.8115;Inherit;False;2;2;0;FLOAT2;0,0;False;1;FLOAT;0;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.PannerNode;52;-1028.624,265.8077;Inherit;True;3;0;FLOAT2;0,0;False;2;FLOAT2;0,0;False;1;FLOAT;1;False;1;FLOAT2;0
-Node;AmplifyShaderEditor.RangedFloatNode;58;-599.9126,394.062;Inherit;False;Property;_MaskPower;Mask Power;4;0;Create;True;0;0;0;False;0;False;1;1;0;0;0;1;FLOAT;0
-Node;AmplifyShaderEditor.SamplerNode;49;-734.6846,202.3901;Inherit;True;Property;_NormalMapMask;Normal Map Mask;2;0;Create;True;0;0;0;False;0;False;-1;b8e6ef66430b7fe478f8678e1813da21;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.RangedFloatNode;58;-599.9126,394.062;Inherit;False;Property;_MaskPower;Mask Power;5;0;Create;True;0;0;0;False;0;False;1;1;0;0;0;1;FLOAT;0
+Node;AmplifyShaderEditor.SamplerNode;49;-734.6846,202.3901;Inherit;True;Property;_NormalMapMask;Normal Map Mask;2;0;Create;True;0;0;0;False;0;False;-1;b8e6ef66430b7fe478f8678e1813da21;b8e6ef66430b7fe478f8678e1813da21;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.RangedFloatNode;70;-1518.186,551.7766;Inherit;False;Property;_TillingVertexoffset;Tilling Vertex offset;7;0;Create;True;0;0;0;False;0;False;1;1;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.RangedFloatNode;30;-1389.798,-112.9827;Inherit;False;Property;_Tilling;Tilling;1;0;Create;True;0;0;0;False;0;False;1;1;0;0;0;1;FLOAT;0
-Node;AmplifyShaderEditor.SimpleMultiplyOpNode;56;-440.62,203.2183;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;60;-575.9126,471.062;Inherit;False;Property;_Float0;Float 0;6;0;Create;True;0;0;0;False;0;False;0;0;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;29;-1259.472,-163.9807;Inherit;False;2;2;0;FLOAT2;0,0;False;1;FLOAT;0;False;1;FLOAT2;0
-Node;AmplifyShaderEditor.RangedFloatNode;60;-575.9126,471.062;Inherit;False;Property;_Float0;Float 0;5;0;Create;True;0;0;0;False;0;False;0;0;0;0;0;1;FLOAT;0
-Node;AmplifyShaderEditor.PowerNode;59;-322.9126,256.062;Inherit;False;False;2;0;FLOAT;0;False;1;FLOAT;1;False;1;FLOAT;0
+Node;AmplifyShaderEditor.SimpleMultiplyOpNode;56;-440.62,203.2183;Inherit;False;2;2;0;FLOAT;0;False;1;FLOAT;0;False;1;FLOAT;0
+Node;AmplifyShaderEditor.SimpleMultiplyOpNode;69;-1252.753,537.716;Inherit;False;2;2;0;FLOAT2;0,0;False;1;FLOAT;0;False;1;FLOAT2;0
 Node;AmplifyShaderEditor.PannerNode;10;-1033.46,43.99738;Inherit;True;3;0;FLOAT2;0,0;False;2;FLOAT2;0,0;False;1;FLOAT;1;False;1;FLOAT2;0
-Node;AmplifyShaderEditor.ColorNode;41;-868.0601,-369.3005;Inherit;False;Property;_ColorB;Color B;11;0;Create;True;0;0;0;False;0;False;0.9056604,0.8441129,0.6115038,1;0.9056604,0.8441129,0.6115038,1;True;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.SamplerNode;15;-735.46,5.997391;Inherit;True;Property;_NormalMap;Normal Map;0;0;Create;True;0;0;0;False;0;False;-1;0a824bd96c295e24e9d9af3700af69e9;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
-Node;AmplifyShaderEditor.ColorNode;40;-869.3593,-530.4999;Inherit;False;Property;_ColorA;Color A;10;0;Create;True;0;0;0;False;0;False;0.9716981,0.7226098,0.2802472,0;0.9716981,0.7226098,0.2802472,0;True;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.PowerNode;59;-322.9126,256.062;Inherit;False;False;2;0;FLOAT;0;False;1;FLOAT;1;False;1;FLOAT;0
+Node;AmplifyShaderEditor.PannerNode;67;-1008.288,517.7396;Inherit;True;3;0;FLOAT2;0,0;False;2;FLOAT2;0,0;False;1;FLOAT;1;False;1;FLOAT2;0
+Node;AmplifyShaderEditor.ColorNode;40;-869.3593,-530.4999;Inherit;False;Property;_ColorA;Color A;13;0;Create;True;0;0;0;False;0;False;0.9716981,0.7226098,0.2802472,0;0.9716981,0.7226098,0.2802472,0;True;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.ColorNode;41;-868.0601,-369.3005;Inherit;False;Property;_ColorB;Color B;14;0;Create;True;0;0;0;False;0;False;0.9056604,0.8441129,0.6115038,1;0.9056604,0.8441129,0.6115038,1;True;0;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.SamplerNode;68;-699.6009,566.649;Inherit;True;Property;_NormalMapMask1;Normal Map Mask;3;0;Create;True;0;0;0;False;0;False;-1;b8e6ef66430b7fe478f8678e1813da21;b8e6ef66430b7fe478f8678e1813da21;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
+Node;AmplifyShaderEditor.RangedFloatNode;63;-208.5492,681.4263;Inherit;False;Property;_Vertexoffset;Vertex offset;8;0;Create;True;0;0;0;False;0;False;0;0;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.SaturateNode;57;-320.62,197.2183;Inherit;False;1;0;FLOAT;0;False;1;FLOAT;0
-Node;AmplifyShaderEditor.RangedFloatNode;26;-328.4921,348.4192;Inherit;False;Property;_Metallic;Metallic;8;0;Create;True;0;0;0;False;0;False;0;0;0;0;0;1;FLOAT;0
+Node;AmplifyShaderEditor.SamplerNode;15;-735.46,5.997391;Inherit;True;Property;_NormalMap;Normal Map;0;0;Create;True;0;0;0;False;0;False;-1;0a824bd96c295e24e9d9af3700af69e9;0a824bd96c295e24e9d9af3700af69e9;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;8;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1;False;6;FLOAT;0;False;7;SAMPLERSTATE;;False;5;COLOR;0;FLOAT;1;FLOAT;2;FLOAT;3;FLOAT;4
 Node;AmplifyShaderEditor.LerpOp;39;-593.3251,-527.6865;Inherit;False;3;0;COLOR;0,0,0,0;False;1;COLOR;0,0,0,0;False;2;FLOAT;0;False;1;COLOR;0
+Node;AmplifyShaderEditor.RangedFloatNode;26;-328.4921,348.4192;Inherit;False;Property;_Metallic;Metallic;11;0;Create;True;0;0;0;False;0;False;0;0;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.LerpOp;47;-382.0433,-8.940042;Inherit;False;3;0;COLOR;0.5019608,0.5019608,1,0;False;1;COLOR;0,0,0,0;False;2;FLOAT;0;False;1;COLOR;0
-Node;AmplifyShaderEditor.RangedFloatNode;38;-352.8371,426.234;Inherit;False;Property;_Smoothness;Smoothness;9;0;Create;True;0;0;0;False;0;False;0;0;0;0;0;1;FLOAT;0
+Node;AmplifyShaderEditor.RangedFloatNode;38;-352.8371,426.234;Inherit;False;Property;_Smoothness;Smoothness;12;0;Create;True;0;0;0;False;0;False;0;0;0;0;0;1;FLOAT;0
+Node;AmplifyShaderEditor.SimpleMultiplyOpNode;62;0.7940907,579.752;Inherit;False;2;2;0;COLOR;0,0,0,0;False;1;FLOAT;0;False;1;COLOR;0
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;7;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraph.PBRMasterGUI;0;1;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;DepthNormals;0;6;DepthNormals;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;0;True;17;d3d9;d3d11;glcore;gles;gles3;metal;vulkan;xbox360;xboxone;xboxseries;ps4;playstation;psp2;n3ds;wiiu;switch;nomrt;0;False;True;1;1;False;-1;0;False;-1;0;1;False;-1;0;False;-1;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;1;False;-1;True;3;False;-1;False;True;1;LightMode=DepthNormals;False;False;0;Hidden/InternalErrorShader;0;0;Standard;0;False;0
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;5;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraph.PBRMasterGUI;0;1;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;Meta;0;4;Meta;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;0;True;17;d3d9;d3d11;glcore;gles;gles3;metal;vulkan;xbox360;xboxone;xboxseries;ps4;playstation;psp2;n3ds;wiiu;switch;nomrt;0;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;2;False;-1;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;1;LightMode=Meta;False;False;0;Hidden/InternalErrorShader;0;0;Standard;0;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;1;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraph.PBRMasterGUI;0;1;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;ExtraPrePass;0;0;ExtraPrePass;5;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;0;True;17;d3d9;d3d11;glcore;gles;gles3;metal;vulkan;xbox360;xboxone;xboxseries;ps4;playstation;psp2;n3ds;wiiu;switch;nomrt;0;False;True;1;1;False;-1;0;False;-1;0;1;False;-1;0;False;-1;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;True;True;True;True;0;False;-1;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;True;1;False;-1;True;3;False;-1;True;True;0;False;-1;0;False;-1;True;0;False;False;0;Hidden/InternalErrorShader;0;0;Standard;0;False;0
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;3;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraph.PBRMasterGUI;0;1;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;ShadowCaster;0;2;ShadowCaster;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;0;True;17;d3d9;d3d11;glcore;gles;gles3;metal;vulkan;xbox360;xboxone;xboxseries;ps4;playstation;psp2;n3ds;wiiu;switch;nomrt;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;False;False;True;False;False;False;False;0;False;-1;False;False;False;False;False;False;False;False;False;True;1;False;-1;True;3;False;-1;False;True;1;LightMode=ShadowCaster;False;False;0;Hidden/InternalErrorShader;0;0;Standard;0;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;2;-107.8986,-5.957756;Float;False;True;-1;2;UnityEditor.ShaderGraph.PBRMasterGUI;0;2;SHD_MashedPotatoe;94348b07e5e8bab40bd6c8a1e3df54cd;True;Forward;0;1;Forward;18;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;0;True;17;d3d9;d3d11;glcore;gles;gles3;metal;vulkan;xbox360;xboxone;xboxseries;ps4;playstation;psp2;n3ds;wiiu;switch;nomrt;0;False;True;1;1;False;-1;0;False;-1;1;1;False;-1;0;False;-1;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;-1;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;True;1;False;-1;True;3;False;-1;True;True;0;False;-1;0;False;-1;True;1;LightMode=UniversalForward;False;False;0;Hidden/InternalErrorShader;0;0;Standard;38;Workflow;1;637845834582890452;Surface;0;0;  Refraction Model;0;0;  Blend;0;0;Two Sided;1;0;Fragment Normal Space,InvertActionOnDeselection;0;0;Transmission;0;0;  Transmission Shadow;0.5,False,-1;0;Translucency;0;0;  Translucency Strength;1,False,-1;0;  Normal Distortion;0.5,False,-1;0;  Scattering;2,False,-1;0;  Direct;0.9,False,-1;0;  Ambient;0.1,False,-1;0;  Shadow;0.5,False,-1;0;Cast Shadows;1;0;  Use Shadow Threshold;0;0;Receive Shadows;1;0;GPU Instancing;1;0;LOD CrossFade;1;0;Built-in Fog;1;0;_FinalColorxAlpha;0;0;Meta Pass;1;0;Override Baked GI;0;0;Extra Pre Pass;0;0;DOTS Instancing;0;0;Tessellation;0;0;  Phong;0;0;  Strength;0.5,False,-1;0;  Type;0;0;  Tess;16,False,-1;0;  Min;10,False,-1;0;  Max;25,False,-1;0;  Edge Length;16,False,-1;0;  Max Displacement;25,False,-1;0;Write Depth;0;0;  Early Z;0;0;Vertex Position,InvertActionOnDeselection;1;0;0;8;False;True;True;True;True;True;True;True;False;;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;4;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraph.PBRMasterGUI;0;1;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;DepthOnly;0;3;DepthOnly;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;0;True;17;d3d9;d3d11;glcore;gles;gles3;metal;vulkan;xbox360;xboxone;xboxseries;ps4;playstation;psp2;n3ds;wiiu;switch;nomrt;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;False;False;True;False;False;False;False;0;False;-1;False;False;False;False;False;False;False;False;False;True;1;False;-1;False;False;True;1;LightMode=DepthOnly;False;False;0;Hidden/InternalErrorShader;0;0;Standard;0;False;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;6;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraph.PBRMasterGUI;0;1;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;Universal2D;0;5;Universal2D;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;0;True;17;d3d9;d3d11;glcore;gles;gles3;metal;vulkan;xbox360;xboxone;xboxseries;ps4;playstation;psp2;n3ds;wiiu;switch;nomrt;0;False;True;1;1;False;-1;0;False;-1;1;1;False;-1;0;False;-1;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;1;False;-1;True;3;False;-1;True;True;0;False;-1;0;False;-1;True;1;LightMode=Universal2D;False;False;0;Hidden/InternalErrorShader;0;0;Standard;0;False;0
 Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;8;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraph.PBRMasterGUI;0;1;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;GBuffer;0;7;GBuffer;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;0;True;17;d3d9;d3d11;glcore;gles;gles3;metal;vulkan;xbox360;xboxone;xboxseries;ps4;playstation;psp2;n3ds;wiiu;switch;nomrt;0;False;True;1;1;False;-1;0;False;-1;1;1;False;-1;0;False;-1;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;-1;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;True;1;False;-1;True;3;False;-1;True;True;0;False;-1;0;False;-1;True;1;LightMode=UniversalGBuffer;False;False;0;Hidden/InternalErrorShader;0;0;Standard;0;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;6;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraph.PBRMasterGUI;0;1;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;Universal2D;0;5;Universal2D;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;0;True;17;d3d9;d3d11;glcore;gles;gles3;metal;vulkan;xbox360;xboxone;xboxseries;ps4;playstation;psp2;n3ds;wiiu;switch;nomrt;0;False;True;1;1;False;-1;0;False;-1;1;1;False;-1;0;False;-1;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;1;False;-1;True;3;False;-1;True;True;0;False;-1;0;False;-1;True;1;LightMode=Universal2D;False;False;0;Hidden/InternalErrorShader;0;0;Standard;0;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;2;213.7455,49.81327;Float;False;True;-1;2;UnityEditor.ShaderGraph.PBRMasterGUI;0;2;SHD_MashedPotatoe;94348b07e5e8bab40bd6c8a1e3df54cd;True;Forward;0;1;Forward;18;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;0;True;17;d3d9;d3d11;glcore;gles;gles3;metal;vulkan;xbox360;xboxone;xboxseries;ps4;playstation;psp2;n3ds;wiiu;switch;nomrt;0;False;True;1;1;False;-1;0;False;-1;1;1;False;-1;0;False;-1;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;-1;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;True;1;False;-1;True;3;False;-1;True;True;0;False;-1;0;False;-1;True;1;LightMode=UniversalForward;False;False;0;Hidden/InternalErrorShader;0;0;Standard;38;Workflow;1;637845834582890452;Surface;0;0;  Refraction Model;0;0;  Blend;0;0;Two Sided;1;0;Fragment Normal Space,InvertActionOnDeselection;0;0;Transmission;0;0;  Transmission Shadow;0.5,False,-1;0;Translucency;0;0;  Translucency Strength;1,False,-1;0;  Normal Distortion;0.5,False,-1;0;  Scattering;2,False,-1;0;  Direct;0.9,False,-1;0;  Ambient;0.1,False,-1;0;  Shadow;0.5,False,-1;0;Cast Shadows;1;0;  Use Shadow Threshold;0;0;Receive Shadows;1;0;GPU Instancing;1;0;LOD CrossFade;1;0;Built-in Fog;1;0;_FinalColorxAlpha;0;0;Meta Pass;1;0;Override Baked GI;0;0;Extra Pre Pass;0;0;DOTS Instancing;0;0;Tessellation;0;0;  Phong;0;0;  Strength;0.5,False,-1;0;  Type;0;0;  Tess;16,False,-1;0;  Min;10,False,-1;0;  Max;25,False,-1;0;  Edge Length;16,False,-1;0;  Max Displacement;25,False,-1;0;Write Depth;0;0;  Early Z;0;0;Vertex Position,InvertActionOnDeselection;1;0;0;8;False;True;True;True;True;True;True;True;False;;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;1;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraph.PBRMasterGUI;0;1;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;ExtraPrePass;0;0;ExtraPrePass;5;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;0;True;17;d3d9;d3d11;glcore;gles;gles3;metal;vulkan;xbox360;xboxone;xboxseries;ps4;playstation;psp2;n3ds;wiiu;switch;nomrt;0;False;True;1;1;False;-1;0;False;-1;0;1;False;-1;0;False;-1;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;True;True;True;True;0;False;-1;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;True;1;False;-1;True;3;False;-1;True;True;0;False;-1;0;False;-1;True;0;False;False;0;Hidden/InternalErrorShader;0;0;Standard;0;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;4;0,0;Float;False;False;-1;2;UnityEditor.ShaderGraph.PBRMasterGUI;0;1;New Amplify Shader;94348b07e5e8bab40bd6c8a1e3df54cd;True;DepthOnly;0;3;DepthOnly;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;True;0;False;-1;False;False;False;False;False;False;False;False;False;True;False;255;False;-1;255;False;-1;255;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;7;False;-1;1;False;-1;1;False;-1;1;False;-1;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;0;True;17;d3d9;d3d11;glcore;gles;gles3;metal;vulkan;xbox360;xboxone;xboxseries;ps4;playstation;psp2;n3ds;wiiu;switch;nomrt;0;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;-1;False;False;False;True;False;False;False;False;0;False;-1;False;False;False;False;False;False;False;False;False;True;1;False;-1;False;False;True;1;LightMode=DepthOnly;False;False;0;Hidden/InternalErrorShader;0;0;Standard;0;False;0
 WireConnection;46;0;22;0
 WireConnection;44;0;37;0
 WireConnection;44;2;46;0
+WireConnection;61;0;12;0
 WireConnection;53;0;44;0
 WireConnection;53;1;54;0
-WireConnection;61;0;12;0
 WireConnection;52;0;53;0
 WireConnection;52;2;61;0
 WireConnection;52;1;18;0
 WireConnection;49;1;52;0
-WireConnection;56;0;49;1
-WireConnection;56;1;58;0
 WireConnection;29;0;44;0
 WireConnection;29;1;30;0
-WireConnection;59;0;56;0
-WireConnection;59;1;60;0
+WireConnection;56;0;49;1
+WireConnection;56;1;58;0
+WireConnection;69;0;44;0
+WireConnection;69;1;70;0
 WireConnection;10;0;29;0
 WireConnection;10;2;12;0
 WireConnection;10;1;18;0
-WireConnection;15;1;10;0
+WireConnection;59;0;56;0
+WireConnection;59;1;60;0
+WireConnection;67;0;69;0
+WireConnection;67;2;61;0
+WireConnection;67;1;18;0
+WireConnection;68;1;67;0
 WireConnection;57;0;59;0
+WireConnection;15;1;10;0
 WireConnection;39;0;40;0
 WireConnection;39;1;41;0
 WireConnection;39;2;37;2
 WireConnection;47;1;15;0
 WireConnection;47;2;57;0
+WireConnection;62;0;68;0
+WireConnection;62;1;63;0
 WireConnection;2;0;39;0
 WireConnection;2;1;47;0
 WireConnection;2;3;26;0
 WireConnection;2;4;38;0
+WireConnection;2;8;62;0
 ASEEND*/
-//CHKSM=F93B8CB9B98513DB5220D1224AE69D5C7CE8587C
+//CHKSM=18985597272FA4736BE267F51D04FD547C0873EA
