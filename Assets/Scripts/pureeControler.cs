@@ -13,6 +13,8 @@ public class pureeControler : MonoBehaviour
     private float collisionMalus = 1;
     public GameObject pureeDecal;
     public GameObject feather;
+    public Animator animator;
+    public ParticleSystem fallingFx;
 
     void Start()
     {
@@ -61,10 +63,10 @@ public class pureeControler : MonoBehaviour
             score.onHitBird();
             for (int i = 0; i < 5; i++)
             {
-                GameObject featherGo = Instantiate(feather, this.transform.position, Quaternion.identity);
-                featherGo.transform.parent = this.transform;
-                featherGo.transform.localPosition = Vector3.Lerp(new Vector3(-.5f, -.5f, -.5f), new Vector3(.5f, .5f, .5f), Random.Range(0f, 1f));
-                featherGo.transform.eulerAngles = Vector3.Lerp(new Vector3(-360, -360, -360), new Vector3(360, 360, 360), Random.Range(0f, 1f));
+                //GameObject featherGo = Instantiate(feather, this.transform.position, Quaternion.identity);
+                //featherGo.transform.parent = this.transform;
+                //featherGo.transform.localPosition = Vector3.Lerp(new Vector3(-.5f, -.5f, -.5f), new Vector3(.5f, .5f, .5f), Random.Range(0f, 1f));
+                //featherGo.transform.eulerAngles = Vector3.Lerp(new Vector3(-360, -360, -360), new Vector3(360, 360, 360), Random.Range(0f, 1f));
             }
             
         }
@@ -89,6 +91,9 @@ public class pureeControler : MonoBehaviour
 
     private void Update()
     {
+        animator.SetFloat("velocityX", rB.velocity.x);
+        animator.SetFloat("velocityY", rB.velocity.y);
 
+        fallingFx.transform.eulerAngles = new Vector3(0, 0, rB.velocity.x*2);
     }
 }
