@@ -6,11 +6,8 @@ public class worldManager : MonoBehaviour
 {
     public GameObject[] LDbricks;
     public GameObject LDendBrick;
-<<<<<<< Updated upstream
-    public int brickHeight = 20;
-=======
+
     public float brickHeight = 20;
->>>>>>> Stashed changes
     public int brickNumber = 5;
 
     // Start is called before the first frame update
