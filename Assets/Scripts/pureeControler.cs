@@ -15,6 +15,7 @@ public class pureeControler : MonoBehaviour
     public GameObject feather;
     public Animator animator;
     public ParticleSystem fallingFx;
+    public GameObject pigeonExplodeFX;
 
     void Start()
     {
@@ -57,18 +58,21 @@ public class pureeControler : MonoBehaviour
         if (collision.gameObject.tag == "Bounce")
         {
             score.onHitBounce();
+            rB.AddForce(new Vector3(0, 40, 0), ForceMode.Impulse);
         }
         if (collision.gameObject.tag == "Bird")
         {
             score.onHitBird();
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 3; i++)
             {
-                //GameObject featherGo = Instantiate(feather, this.transform.position, Quaternion.identity);
-                //featherGo.transform.parent = this.transform;
-                //featherGo.transform.localPosition = Vector3.Lerp(new Vector3(-.5f, -.5f, -.5f), new Vector3(.5f, .5f, .5f), Random.Range(0f, 1f));
-                //featherGo.transform.eulerAngles = Vector3.Lerp(new Vector3(-360, -360, -360), new Vector3(360, 360, 360), Random.Range(0f, 1f));
+                GameObject featherGo = Instantiate(feather, this.transform.position, Quaternion.identity);
+                featherGo.transform.parent = this.transform;
+                featherGo.transform.localPosition = Vector3.Lerp(new Vector3(-.008f, -.008f, -.008f), new Vector3(.008f, .008f, .008f), Random.Range(0f, 1f));
+                featherGo.transform.eulerAngles = Vector3.Lerp(new Vector3(-360, -360, -360), new Vector3(360, 360, 360), Random.Range(0f, 1f));
             }
-            
+            Instantiate(pigeonExplodeFX, collision.contacts[0].point, Quaternion.identity);
+            Destroy(collision.gameObject);
+
         }
         if (collision.gameObject.tag == "Wall")
         {

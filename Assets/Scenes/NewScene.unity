@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 2138677392}
-  m_IndirectSpecularColor: {r: 0.3924998, g: 0.3893669, b: 0.33269164, a: 1}
+  m_IndirectSpecularColor: {r: 0.5623992, g: 0.44240865, b: 0.31725165, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1122,6 +1122,7 @@ MonoBehaviour:
   feather: {fileID: 0}
   animator: {fileID: 0}
   fallingFx: {fileID: 0}
+  pigeonExplodeFX: {fileID: 0}
 --- !u!23 &2128328764
 MeshRenderer:
   m_ObjectHideFlags: 0
