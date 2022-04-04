@@ -18,6 +18,7 @@ public class pureeControler : MonoBehaviour
     public GameObject pigeonExplodeFX;
     public ParticleSystem splash;
     private bool hitGround;
+    public GameObject end;
 
     void Start()
     {
@@ -98,6 +99,7 @@ public class pureeControler : MonoBehaviour
 
             splash.Play();
             hitGround = true;
+            end.SetActive(true);
         }
     }
 
