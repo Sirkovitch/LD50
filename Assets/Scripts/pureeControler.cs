@@ -16,16 +16,20 @@ public class pureeControler : MonoBehaviour
     public Animator animator;
     public ParticleSystem fallingFx;
     public GameObject pigeonExplodeFX;
+    public ParticleSystem splash;
+    private bool hitGround;
 
     void Start()
     {
         rB = this.GetComponent<Rigidbody>();
         score = GameObject.Find("score").GetComponent<score>();
+        rB.AddForce(new Vector3(-30, 0, 0), ForceMode.Impulse);
+        hitGround = false;
     }
 
     void FixedUpdate()
     {
-        if (Input.GetAxis("Horizontal") != 0 )
+        if (Input.GetAxis("Horizontal") != 0 && hitGround == false)
         {  
             Vector3 inputVelocity = new Vector3(-lateralSpeed * Input.GetAxis("Horizontal"), Mathf.Max(rB.velocity.y, maxVel), 0);
             rB.velocity = Vector3.Lerp(rB.velocity, inputVelocity, collisionMalus);
@@ -83,8 +87,18 @@ public class pureeControler : MonoBehaviour
             GameObject decal = Instantiate(pureeDecal, collision.contacts[0].point, Quaternion.LookRotation(-collision.contacts[0].normal));
             decal.transform.localScale = Vector3.Lerp(new Vector3(5, 5, 5), new Vector3(2, 2, 2), Random.Range(0.0f, 1.0f));
             decal.transform.localEulerAngles = new Vector3(decal.transform.localEulerAngles.x, decal.transform.localEulerAngles.y, Random.Range(0, 360));
-        }
 
+            splash.Play();
+        }
+        if (collision.gameObject.tag == "Ground")
+        {
+            GameObject decal = Instantiate(pureeDecal, collision.contacts[0].point, Quaternion.LookRotation(-collision.contacts[0].normal));
+            decal.transform.localScale = Vector3.Lerp(new Vector3(5, 5, 5), new Vector3(2, 2, 2), Random.Range(0.0f, 1.0f));
+            decal.transform.localEulerAngles = new Vector3(decal.transform.localEulerAngles.x, decal.transform.localEulerAngles.y, Random.Range(0, 360));
+
+            splash.Play();
+            hitGround = true;
+        }
     }
 
     IEnumerator WallCollision()

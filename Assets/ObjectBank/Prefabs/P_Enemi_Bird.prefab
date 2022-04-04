@@ -100,7 +100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 5
-  patrolWidth: 20
+  patrolWidth: 17
   randomSpeed: 0
 --- !u!136 &544561171904024863
 CapsuleCollider:

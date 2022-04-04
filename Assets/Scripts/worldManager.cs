@@ -6,6 +6,8 @@ public class worldManager : MonoBehaviour
 {
     public GameObject[] LDbricks;
     public GameObject LDendBrick;
+    public GameObject player;
+    public GameObject score;
 
     public float brickHeight = 20;
     public int brickNumber = 5;
@@ -19,11 +21,20 @@ public class worldManager : MonoBehaviour
             Instantiate(LDbrick, new Vector3(0, -i * brickHeight, 0), Quaternion.identity);
         }
         Instantiate(LDendBrick, new Vector3(0, -(brickNumber) * brickHeight, 0), Quaternion.identity);
+
+        StartCoroutine(startFlow());
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    private IEnumerator startFlow()
+    {
+        yield return new WaitForSeconds(2);
+        player.SetActive(true);
+        score.SetActive(true);
     }
 }
