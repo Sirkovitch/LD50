@@ -59,6 +59,8 @@ public class pureeControler : MonoBehaviour
         {
             score.onHitBounce();
             rB.AddForce(new Vector3(0, 40, 0), ForceMode.Impulse);
+            collision.gameObject.transform.parent.gameObject.transform.parent.gameObject.GetComponent<Animator>().SetBool("bounce", true);
+            collision.gameObject.GetComponent<MeshCollider>().enabled = false;
         }
         if (collision.gameObject.tag == "Bird")
         {
